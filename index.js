@@ -27,6 +27,55 @@ app.get(["/", "/wow/:name"], (req, res) => {
   }
 });
 
+app.get("/:text", async (req, res) => {
+  try {
+    let text = req.params["text"];
+    if (text) {
+      console.log(text);
+      const api = new ChatGPTAPI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+      const res_ = await api.sendMessage(text);
+      console.log(res_);
+
+      res.send(
+        `<div style="font-size: 16px; font-family: Arial">${res_.text.replace(
+          "\n",
+          "<br>"
+        )}</div>`
+      );
+    } else {
+      res.send("No text found!");
+    }
+  } catch (err) {
+    res.send(err);
+  }
+});
+
+app.get("/img/:text", async (req, res) => {
+  try {
+    let text = req.params["text"];
+    let res_ = await (
+      await fetch("https://api.openai.com/v1/images/generations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          prompt: text,
+          n: 1,
+          size: "1024x1024",
+        }),
+      })
+    ).json();
+    console.log(res_)
+    res.send(`<img src="${res_.data[0].url}">`);
+  } catch (err) {
+    res.send(err);
+  }
+});
+
 app.get("/versions", (req, res) => {
   res.json(process.versions);
 });
@@ -37,11 +86,9 @@ app.get("/ip", (req, res) => {
     .then((data) => res.send(data));
 });
 
-let conversationId, parentMessageId;
-
-
 app.post("/send", async (req, res) => {
   try {
+    console.log("version: 4");
     const api = new ChatGPTAPI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -50,13 +97,7 @@ app.post("/send", async (req, res) => {
 
     res.send(req.body);
 
-    const res_ = await api.sendMessage(req.body.text, {
-      conversationId,
-      parentMessageId,
-      timeoutMs: 2 * 60 * 1000
-    });
-    conversationId = res_.conversationId;
-    parentMessageId = res_.id;
+    const res_ = await api.sendMessage(req.body.text);
     console.log(res_);
 
     let res__ = await (
