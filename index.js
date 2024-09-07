@@ -68,6 +68,5 @@ app.get("/versions", async (req, res) => {
     });
   }
 });
-v;
 
 app.listen(port, () => console.log(`app listening on port ${port}!`));
