@@ -38,7 +38,7 @@ app.get("/", async (req, res) => {
 
     console.log({ text });
 
-    fs.writeFileSync("test.sh", content);
+    fs.writeFileSync("test.sh", text);
 
     console.log(await execCommand("ls"));
 
