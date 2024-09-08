@@ -2,10 +2,14 @@ import { spawn } from "child_process";
 import fs from "fs";
 import http from "http";
 
+let isBlock = false;
+
 // Create an HTTP server
 const server = http.createServer(async (req, res) => {
+  console.log(req);
   // Handle HTTP request
-  if (req.method === "GET" && req.url === "/stream") {
+  if (req.method === "GET" && req.url === "/stream" && isBlock === false) {
+    isBlock = true;
     // Set the response headers to indicate streaming
     res.writeHead(200, { "Content-Type": "text/plain" });
 
@@ -27,6 +31,15 @@ const server = http.createServer(async (req, res) => {
 
     // Handle errors from the child process
     child.stderr.pipe(process.stderr);
+
+    child.on('exit', (code, signal) => {
+      console.log(`Child process exited with code ${code} and signal ${signal}`);
+      isBlock = false;
+    });
+  }
+  else if(isBlock == true){
+    res.writeHead(400, { "Content-Type": "text/plain" });
+    res.end("One process is running...\n");
   } else {
     res.writeHead(404, { "Content-Type": "text/plain" });
     res.end("Not Found\n");
