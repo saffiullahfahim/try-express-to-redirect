@@ -6,7 +6,7 @@ let isBlock = false;
 
 // Create an HTTP server
 const server = http.createServer(async (req, res) => {
-  console.log(req);
+  console.log(req.url);
   try {
     // Handle HTTP request
     if (req.method === "GET" && req.url === "/stream" && isBlock === false) {
@@ -31,7 +31,7 @@ const server = http.createServer(async (req, res) => {
       child.stdout.pipe(res);
 
       // Handle errors from the child process
-      child.stderr.pipe(process.stderr);
+      child.stderr.pipe(res);
 
       // Handle errors from the child process
       child.on("error", (err) => {
